@@ -1,17 +1,25 @@
-#!/bin/bash
-## change to "bin/sh" when necessary
+#!/bin/sh
 
-auth_email=""                                       # The email used to login 'https://dash.cloudflare.com'
-auth_method="token"                                 # Set to "global" for Global API Key or "token" for Scoped API Token
-auth_key=""                                         # Your API Token or Global API Key
-zone_identifier=""                                  # Can be found in the "Overview" tab of your domain
-record_name=""                                      # Which record you want to be synced
-ttl="3600"                                          # Set the DNS TTL (seconds)
-proxy="false"                                       # Set the proxy to true or false
-sitename=""                                         # Title of site "Example Site"
-slackchannel=""                                     # Slack Channel #example
-slackuri=""                                         # URI for Slack WebHook "https://hooks.slack.com/services/xxxxx"
-discorduri=""                                       # URI for Discord WebHook "https://discordapp.com/api/webhooks/xxxxx"
+# the cf ddns script by K0p1-Git modified with some notification options and dockerized by me
+
+#env vars
+auth_email="${AUTH_EMAIL}"
+auth_method="${AUTH_METHOD}"
+auth_key="${AUTH_KEY}"
+zone_identifier="${ZONE_IDENTIFIER}"
+record_name="${RECORD_NAME}"
+ttl="${TTL}"
+proxy="${PROXY}"
+sitename="${SITENAME}"
+notification_level="${NOTIFICATION_LEVEL}"
+slackuri="${SLACKURI}"
+slackchannel="${SLACKCHANNEL}"
+discorduri="${DISCORDURI}"
+ntfyuri="${NTFYURI}"
+telegram_token="${TELEGRAM_TOKEN}"
+telegram_chat_id="${TELEGRAM_CHAT_ID}"
+
+
 
 
 ###########################################
@@ -103,9 +111,22 @@ case "$update" in
       "content" : "'"$sitename"' DDNS Update Failed: '$record_name': '$record_identifier' ('$ip')."
     }' $discorduri
   fi
+  if [[ $ntfyuri != "" ]]; then
+    curl -X POST -H 'Content-type: application/json' --data '{"text":"'"$sitename"' DDNS Update Failed: '$record_name': '$record_identifier' ('$ip').", "title":"Cloudflare DDNS-Update failed"}' $ntfyuri
+  fi
+  if [[ $telegramtoken != "" ]] && [[ $telegramchatid != "" ]]; then
+    curl -H 'Content-Type: application/json' -X POST \
+    --data-raw '{
+      "chat_id": "'$telegramchatid'", "text": "'"$sitename"' DDNS Update Failed: '$record_name': '$record_identifier' ('$ip')."
+    }' https://api.telegram.org/bot$telegramtoken/sendMessage
+  fi
   exit 1;;
 *)
   logger "DDNS Updater: $ip $record_name DDNS updated."
+  if [[ $notification_level != "always" ]]; then
+    exit 0
+  fi
+  
   if [[ $slackuri != "" ]]; then
     curl -L -X POST $slackuri \
     --data-raw '{
@@ -118,6 +139,15 @@ case "$update" in
     --data-raw '{
       "content" : "'"$sitename"' Updated: '$record_name''"'"'s'""' new IP Address is '$ip'"
     }' $discorduri
+  fi
+  if [[ $ntfyuri != "" ]]; then
+    curl -X POST -H 'Content-type: application/json' --data '{"text":"'"$sitename"' Updated: '$record_name''"'"'s'""' new IP Address is '$ip'", "title":"Cloudflare DDNS-Update"}' $ntfyuri
+  fi
+  if [[ $telegramtoken != "" ]] && [[ $telegramchatid != "" ]]; then
+    curl -H 'Content-Type: application/json' -X POST \
+    --data-raw '{
+      "chat_id": "'$telegramchatid'", "text": "'"$sitename"' DDNS Update Failed: '$record_name': '$record_identifier' ('$ip')."
+    }' https://api.telegram.org/bot$telegramtoken/sendMessage
   fi
   exit 0;;
 esac
