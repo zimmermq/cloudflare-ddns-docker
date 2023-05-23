@@ -1,6 +1,37 @@
-#!/bin/sh
+#!/bin/bash
 
 # the cf ddns script by K0p1-Git modified with some notification options and dockerized by me
+
+#check if vars aure set
+if [[ -z "${AUTH_EMAIL}" ]]; then
+  echo "AUTH_EMAIL is not set"
+  exit 1
+fi
+if [[ -z "${AUTH_METHOD}" ]]; then
+  echo "AUTH_METHOD is not set"
+  exit 1
+fi
+if [[ -z "${AUTH_KEY}" ]]; then
+  echo "AUTH_KEY is not set"
+  exit 1
+fi
+if [[ -z "${ZONE_IDENTIFIER}" ]]; then
+  echo "ZONE_IDENTIFIER is not set"
+  exit 1
+fi
+if [[ -z "${RECORD_NAME}" ]]; then
+  echo "RECORD_NAME is not set"
+  exit 1
+fi
+if [[ -z "${TTL}" ]]; then
+  echo "TTL is not set"
+  exit 1
+fi
+if [[ -z "${PROXY}" ]]; then
+  echo "PROXY is not set"
+  exit 1
+fi
+
 
 #env vars
 auth_email="${AUTH_EMAIL}"
@@ -10,14 +41,15 @@ zone_identifier="${ZONE_IDENTIFIER}"
 record_name="${RECORD_NAME}"
 ttl="${TTL}"
 proxy="${PROXY}"
-sitename="${SITENAME}"
-notification_level="${NOTIFICATION_LEVEL}"
-slackuri="${SLACKURI}"
-slackchannel="${SLACKCHANNEL}"
-discorduri="${DISCORDURI}"
-ntfyuri="${NTFYURI}"
-telegram_token="${TELEGRAM_TOKEN}"
-telegram_chat_id="${TELEGRAM_CHAT_ID}"
+
+sitename="${SITENAME-''}"
+notification_level="${NOTIFICATION_LEVEL-''}"
+slackuri="${SLACKURI-''}"
+slackchannel="${SLACKCHANNEL-''}"
+discorduri="${DISCORDURI-''}"
+ntfyuri="${NTFYURI-''}"
+telegram_token="${TELEGRAM_TOKEN-''}"
+telegram_chat_id="${TELEGRAM_CHAT_ID-''}"
 
 
 
