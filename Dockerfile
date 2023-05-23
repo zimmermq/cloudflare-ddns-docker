@@ -3,7 +3,7 @@ FROM debian:stable-slim
 LABEL maintainer="officialEmmel"
 LABEL version="1.0"
 LABEL description="Cloudflare DDNS Updater"
-LABEL repository="https://github.com/officialEmmel/cf-ddns-updater-docker"
+LABEL repository="https://github.com/officialEmmel/cf-ddns-updater"
 
 
 COPY entrypoint.sh /entrypoint.sh
