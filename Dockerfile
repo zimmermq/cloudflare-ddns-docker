@@ -12,4 +12,4 @@ RUN chmod +x /entrypoint.sh
 COPY cloudflare-ddns.sh /usr/local/bin/cloudflare-ddns.sh
 RUN chmod +x /usr/local/bin/cloudflare-ddns.sh
 
-CMD ["/entrypoint.sh"]
+CMD ["/bin/bash","/entrypoint.sh"]
