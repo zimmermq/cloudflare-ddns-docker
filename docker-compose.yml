@@ -1,17 +1,18 @@
 services:
   ddns:
-    image: test2
+    image: emmel/ddns-updater
     restart: always
     container_name: ddns
     environment:
-      - auth_email=email@example.com
-      - auth_method=token
-      - auth_token=token
-      - zone=example.com
-      - record=example.com
-      - record_type=A
-      - record_ttl=1
-      - record_proxied=true
-      - sitename=example.com
-      - notification_level=on_fail
-      - ntfyuri=https://ntfy.sh/ddns
+      - AUTH_EMAIL=emmel.official@gmail.com
+      - AUTH_METHOD=global
+      - AUTH_KEY=9ca861989cb540da0899a04be638b9432d1c6
+      - ZONE_IDENTIFIER=84064d9401fc15afe229a063b28c3b8a
+      - RECORD=emmel.network
+      - RECORD_TYPE=A
+      - RECORD_TTL=3600
+      - RECORD_PROXIED=true
+      - SITENAME=emmel.network
+      - NOTIFICATION_LEVEL=on_fail
+      - NTFYURI=https://ntfy.emmel.network/ddns
+      - CRON_JOB="* * * * *"
