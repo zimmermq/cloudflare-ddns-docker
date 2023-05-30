@@ -5,6 +5,9 @@ LABEL version="1.0"
 LABEL description="Cloudflare DDNS Updater"
 LABEL repository="https://github.com/officialEmmel/cf-ddns-updater"
 
+RUN apt-get update
+RUN apt-get install -y curl cron
+
 
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
