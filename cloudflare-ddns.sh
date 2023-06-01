@@ -11,14 +11,14 @@ record_name="${RECORD_NAME}"
 ttl="${TTL}"
 proxy="${PROXY}"
 
-sitename="${SITENAME-''}"
-notification_level="${NOTIFICATION_LEVEL-''}"
-slackuri="${SLACKURI-''}"
-slackchannel="${SLACKCHANNEL-''}"
-discorduri="${DISCORDURI-''}"
-ntfyuri="${NTFYURI-''}"
-telegram_token="${TELEGRAM_TOKEN-''}"
-telegram_chat_id="${TELEGRAM_CHAT_ID-''}"
+sitename="${SITENAME-}"
+notification_level="${NOTIFICATION_LEVEL}"
+slackuri="${SLACKURI}"
+slackchannel="${SLACKCHANNEL}"
+discorduri="${DISCORDURI}"
+ntfyuri="${NTFYURI}"
+telegram_token="${TELEGRAM_TOKEN}"
+telegram_chat_id="${TELEGRAM_CHAT_ID-}"
 
 err() {
   echo "[ERROR] $(date '+%Y-%m-%d %H:%M:%S') $1"
@@ -30,32 +30,32 @@ log() {
 
 send_notification() {
 
-  if [[ $slackuri != '' ]]; then
+  if [[ -n $slackuri ]]; then
+    log "Sending notification to slack"
     curl --silent -o /dev/null  -L -X POST $slackuri \
     --data-raw '{
       "channel": "'$slackchannel'",
       "text" : "'"$1"'"
     }'
-    log "Sending notification to slack"
   fi
-  if [[ $discorduri != '' ]]; then
+  if [[ -n $discorduri  ]]; then
+    log "Sending notification to discord"
     curl --silent -o /dev/null  -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST \
     --data-raw '{
       "content" : "'"$1"'"
     }' $discorduri
-    log "Sending notification to discord"
 
   fi
-  if [[ $ntfyuri != '' ]]; then
-    curl --silent -o /dev/null -d "$(echo $1)" $ntfyuri
+  if [[ -n $ntfyuri ]]; then
     log "Sending notification to ntfy"
+    curl --silent -o /dev/null -d "$(echo $1)" $ntfyuri
   fi
-  if [[ $telegram_token != '' ]] && [[ $telegram_chat_id != '' ]]; then
+  if [[ -n $telegram_token ]] && [[ -n $telegram_chat_id ]]; then
+    log "Sending notification to telegram"
     curl --silent -o /dev/null  -H 'Content-Type: application/json' -X POST \
     --data-raw '{
       "chat_id": "'$telegram_chat_id'", "text": "'"$1"'"
     }' https://api.telegram.org/bot$telegram_token/sendMessage
-    log "Sending notification to telegram"
   fi
 }
 
@@ -127,8 +127,8 @@ fi
 old_ip=$(echo "$record" | sed -E 's/.*"content":"(([0-9]{1,3}\.){3}[0-9]{1,3})".*/\1/')
 # Compare if they're the same
 if [[ $ip == $old_ip ]]; then
-  log "IP ($ip) for ${record_name} hast not canged."
-  notify "debug" "IP ($ip) for ${record_name} has not canged."
+  log "IP ($ip) for ${record_name} hast not changed."
+  notify "debug" "IP ($ip) for ${record_name} has not changed."
   exit 0
 fi
 
