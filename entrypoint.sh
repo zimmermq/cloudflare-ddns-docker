@@ -1,16 +1,24 @@
 #!/bin/bash
 
+echo "cloudflare-ddns-updater dockerized"
+echo "installing cronjob based on user-conf"
+
 # install cron job 
 cronjob="${CRON_JOB:-0 * * * *}"
 cronjob_log="${CRON_JOB_LOG:-/var/log/cron.log}"
 
-echo "$cronjob /bin/bash /usr/local/bin/cloudflare-ddns.sh >> $cronjob_log 2>&1" > /etc/cron.d/cloudflare-ddns
+echo "$cronjob /bin/bash /usr/local/bin/cloudflare-ddns.sh" > /cloudflare-ddns
 
-chmod 0644 /etc/cron.d/cloudflare-ddns
+chmod 0644 /cloudflare-ddns
 
-crontab /etc/cron.d/cloudflare-ddns
+crontab /cloudflare-ddns
 
-touch $cronjob_log
+#touch $cronjob_log
+
+echo "loading env vars"
+printenv | grep -v "no_proxy" >> /etc/environment
+
+echo "starting cron..."
 
 # start cron
-cron -f
+crond -f -l 2

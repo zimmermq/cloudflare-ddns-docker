@@ -33,6 +33,8 @@ if [[ -z "${PROXY}" ]]; then
 fi
 
 
+
+
 #env vars
 auth_email="${AUTH_EMAIL}"
 auth_method="${AUTH_METHOD}"
@@ -52,8 +54,6 @@ telegram_token="${TELEGRAM_TOKEN-''}"
 telegram_chat_id="${TELEGRAM_CHAT_ID-''}"
 
 
-
-
 ###########################################
 ## Check if we have a public IP
 ###########################################
@@ -70,6 +70,7 @@ fi
 # Use regex to check for proper IPv4 format.
 if [[ ! $ip =~ ^$ipv4_regex$ ]]; then
     logger -s "DDNS Updater: Failed to find a valid IP."
+    echo "Failed to find valid IP"
     exit 2
 fi
 
@@ -87,6 +88,7 @@ fi
 ###########################################
 
 logger "DDNS Updater: Check Initiated"
+echo "check initaited"
 record=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$zone_identifier/dns_records?type=A&name=$record_name" \
                       -H "X-Auth-Email: $auth_email" \
                       -H "$auth_header $auth_key" \
@@ -97,6 +99,7 @@ record=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$zone_identi
 ###########################################
 if [[ $record == *"\"count\":0"* ]]; then
   logger -s "DDNS Updater: Record does not exist, perhaps create one first? (${ip} for ${record_name})"
+  echo "Record does not exist, perhapscreate one first? (${ip} for ${record_name})"
   exit 1
 fi
 
@@ -107,6 +110,7 @@ old_ip=$(echo "$record" | sed -E 's/.*"content":"(([0-9]{1,3}\.){3}[0-9]{1,3})".
 # Compare if they're the same
 if [[ $ip == $old_ip ]]; then
   logger "DDNS Updater: IP ($ip) for ${record_name} has not changed."
+  echo "IP  ($ip) for ${record_name} hast not canged."
   exit 0
 fi
 
