@@ -18,7 +18,7 @@ This is a fork of [K0P1-Git/cloudflare-ddns-updater](https://github.com/K0P1-Git
 ```yaml
 services:
   ddns:
-    image: ddns-updater
+    image: ghcr.io/officialemmel/cloudflare-ddns-docker:main
     restart: always
     container_name: ddns
     environment:
