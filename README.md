@@ -1,9 +1,17 @@
 # ☁️ Cloudflare DDNS IP Updater - Docker
-Lightweight Docker Container that dynamically updates the IP via Cloudflare API.
+Lightweight Docker Container that dynamically updates the IP via Cloudflare API. Access your home network remotely via a custom domain name without a static IP! 
 
 ## About
-This is a fork of K0P1-Git/cloudflare-ddns-updater script added with **docker** support and some notification services.
-The image is based on alpine docker image, the script uses pure BASH and updates are scheduled with cron.
+This is a fork of [K0P1-Git/cloudflare-ddns-updater](https://github.com/K0P1-Git/cloudflare-ddns-updater) script added with **docker** support and some **notification services**.
+- lightweight docker image based on alpine
+- written in pure BASH
+- scheduled with crond
+- notification services
+  - slack
+  - discord
+  - ntfy
+  - telegram
+
 
 ## Configuration
 ### Example docker-compose.yml
@@ -29,7 +37,7 @@ services:
 
 ```
 ### Environment variables
-#### Required
+### Required
 | Name | Description | 
 |---|---|
 |`AUTH_EMAIL`|(required) Mail used to register with Cloudflare|
@@ -40,7 +48,7 @@ services:
 |`PROXY`|(required) proxy through cloudflare network `true` or `false`|
 |`CRON_JOB`|(required) Array of IPs that cant access the command|
 
-#### Notifications
+### Notifications
 | Name | Description | 
 |---|---|
 |`SITENAME`|Used for notifications as identifier|
@@ -67,3 +75,16 @@ services:
 |---|---|
 |`TELEGRAM_TOKEN`|Telegram bot token| 
 |`TELEGRAM_CHAT_ID`|Telegram chat id| 
+
+### How to use cron
+```
+# ┌───────────── minute (0 - 59)
+# │ ┌───────────── hour (0 - 23)
+# │ │ ┌───────────── day of the month (1 - 31)
+# │ │ │ ┌───────────── month (1 - 12)
+# │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday 7 is also Sunday on some systems)
+# │ │ │ │ │                               
+# │ │ │ │ │ 
+# │ │ │ │ │ 
+# * * * * * 
+```
