@@ -11,14 +11,14 @@ record_name="${RECORD_NAME}"
 ttl="${TTL}"
 proxy="${PROXY}"
 
-sitename="${SITENAME-}"
+sitename="${SITENAME}"
 notification_level="${NOTIFICATION_LEVEL}"
 slackuri="${SLACKURI}"
 slackchannel="${SLACKCHANNEL}"
 discorduri="${DISCORDURI}"
 ntfyuri="${NTFYURI}"
 telegram_token="${TELEGRAM_TOKEN}"
-telegram_chat_id="${TELEGRAM_CHAT_ID-}"
+telegram_chat_id="${TELEGRAM_CHAT_ID}"
 
 err() {
   echo "[ERROR] $(date '+%Y-%m-%d %H:%M:%S') $1"
@@ -127,8 +127,8 @@ fi
 old_ip=$(echo "$record" | sed -E 's/.*"content":"(([0-9]{1,3}\.){3}[0-9]{1,3})".*/\1/')
 # Compare if they're the same
 if [[ $ip == $old_ip ]]; then
-  log "IP ($ip) for ${record_name} hast not changed."
-  notify "debug" "IP ($ip) for ${record_name} has not changed."
+  log "Update skipped because IP ($ip) for ${record_name} hast not changed."
+  notify "debug" "DDNS-Update Skipped: IP ($ip) for ${record_name} has not changed."
   exit 0
 fi
 

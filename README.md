@@ -1,37 +1,67 @@
-# Cloudflare Dynamic DNS IP Updater
-<img alt="GitHub" src="https://img.shields.io/github/license/K0p1-Git/cloudflare-ddns-updater?color=black"> <img alt="GitHub last commit (branch)" src="https://img.shields.io/github/last-commit/K0p1-Git/cloudflare-ddns-updater/main"> <img alt="GitHub contributors" src="https://img.shields.io/github/contributors/K0p1-Git/cloudflare-ddns-updater">
+# ☁️ Cloudflare DDNS IP Updater - Docker
+Lightweight Docker Container that dynamically updates the IP via Cloudflare API.
+This is a fork of K0P1-Git/cloudflare-ddns-updater script added with **docker** support and some notification services.
+The image is based on alpine docker image, the script uses pure BASH and updates are scheduled with cron.
 
-This script is used to update Dynamic DNS (DDNS) service based on Cloudflare! Access your home network remotely via a custom domain name without a static IP! Written in pure BASH.
+## Configuration
+### Example docker-compose.yml
+```yaml
+services:
+  ddns:
+    image: ddns-updater
+    restart: always
+    container_name: ddns
+    environment:
+      - CRON_JOB=* * * * *
+      - AUTH_EMAIL=mail@example.com
+      - AUTH_METHOD=global
+      - AUTH_KEY=abcdefgh12345
+      - ZONE_IDENTIFIER=123456abcdefgh
+      - RECORD_NAME=example.com
+      - RECORD_TYPE=A
+      - TTL=3600
+      - PROXY=true
+      - SITENAME=example.com
+      - NOTIFICATION_LEVEL=on_success_or_error
+      - NTFYURI=https://ntfy.example.com/ddns
 
-## Support Me
-[![Donate Via Paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.me/Jasonkkf)
-
-## Installation
-
-```bash
-git clone https://github.com/K0p1-Git/cloudflare-ddns-updater.git
 ```
+### Environment variables
+#### Required
+| Name | Description | 
+|---|---|
+|`AUTH_EMAIL`|(required) Mail used to register with Cloudflare|
+|`AUTH_METHOD`|(required) `global` for Global API Key or `token` for Scoped API Token | 
+|`ZONE_IDENTIFIER`|(required) Can be found in the "Overview" tab of your domain|
+|`RECORD_NAME`|(required) Which record you want to be synced|
+|`TTL`|(required) DNS TTL in seconds |`"token":"abc123"`|
+|`PROXY`|(required) proxy through cloudflare network `true` or `false`|
+|`CRON_JOB`|(required) Array of IPs that cant access the command|
 
-## Usage
-This script is used with crontab. Specify the frequency of execution through crontab.
+#### Notifications
+| Name | Description | 
+|---|---|
+|`SITENAME`|Used for notifications as identifier|
+|`NOTIFICATION_LEVEL`|`on_error` to get notified only on error; `on_success_or_error` to get notified on success or error; `always` to get notified oon every try even if ip has not changed| 
 
-```bash
-# ┌───────────── minute (0 - 59)
-# │ ┌───────────── hour (0 - 23)
-# │ │ ┌───────────── day of the month (1 - 31)
-# │ │ │ ┌───────────── month (1 - 12)
-# │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday 7 is also Sunday on some systems)
-# │ │ │ │ │ ┌───────────── command to issue                               
-# │ │ │ │ │ │
-# │ │ │ │ │ │
-# * * * * * /bin/bash {Location of the script}
-```
+#### Slack
+| Name | Description | 
+|---|---|
+|`SLACKURI`|Slack Uri|
+|`SLACKCHANNEL`|Slackchannel| 
 
-## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
+#### Discord Webhook
+| Name | Description | 
+|---|---|
+|`DISCORDURI`|Discord WebHook uri| 
 
-## Reference
-This script was made with reference from [Keld Norman](https://www.youtube.com/watch?v=vSIBkH7sxos) video.
+#### Ntfy
+| Name | Description | 
+|---|---|
+|`NTFYURI`|Ntfy uri and topic| 
 
-## License
-[MIT](https://github.com/K0p1-Git/cloudflare-ddns-updater/blob/main/LICENSE)
+#### Telegram
+| Name | Description | 
+|---|---|
+|`TELEGRAM_TOKEN`|Telegram bot token| 
+|`TELEGRAM_CHAT_ID`|Telegram chat id| 
