@@ -1,5 +1,7 @@
 # ☁️ Cloudflare DDNS IP Updater - Docker
 Lightweight Docker Container that dynamically updates the IP via Cloudflare API.
+
+## About
 This is a fork of K0P1-Git/cloudflare-ddns-updater script added with **docker** support and some notification services.
 The image is based on alpine docker image, the script uses pure BASH and updates are scheduled with cron.
 
