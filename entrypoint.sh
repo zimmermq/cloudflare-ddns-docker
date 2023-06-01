@@ -30,7 +30,7 @@ if [[ -z "${PROXY}" ]]; then
   exit 1
 fi
 
-echo "cloudflare-ddns.sh by K0p1-Git modified with some notification options and dockerized by emmel"
+echo "cloudflare-ddns-docker by officialEmmel based on script by K0P1-Git"
 echo ""
 echo "=================================="
 echo "Auth Email: ${AUTH_EMAIL}"
