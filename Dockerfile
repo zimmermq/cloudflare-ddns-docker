@@ -3,7 +3,7 @@ FROM alpine:3.7
 LABEL maintainer="officialEmmel"
 LABEL version="1.0"
 LABEL description="Cloudflare DDNS Updater"
-LABEL repository="https://github.com/officialEmmel/cf-ddns-updater"
+LABEL repository="https://github.com/officialEmmel/cloudflare-ddns-docker"
 
 RUN apk update 
 RUN apk add bash
