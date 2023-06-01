@@ -48,16 +48,17 @@ echo ">> installing cron job"
 cronjob="${CRON_JOB:-0 * * * *}"
 cronjob_log="${CRON_JOB_LOG:-/var/log/cron.log}"
 
-echo "$cronjob /bin/bash /usr/local/bin/cloudflare-ddns.sh" > /cloudflare-ddns
+echo "$cronjob /bin/bash /usr/local/bin/cloudflare-ddns.sh" > /usr/local/bin/cloudflare-ddns-cron
 
-chmod 0644 /cloudflare-ddns
+chmod 0644 /usr/local/bin/cloudflare-ddns-cron
 
-crontab /cloudflare-ddns
+crontab /usr/local/bin/cloudflare-ddns-cron
 
 echo ">> loading env vars"
 printenv | grep -v "no_proxy" >> /etc/environment
 
-echo ">> ready. ($(date "+%Y-%m-%d %H:%M:%S"))" 
+echo ">> setup ready. starting cron... ($(date "+%Y-%m-%d %H:%M:%S"))" 
+echo "=================================="
 
 # start cron
 crond -f -l 2
