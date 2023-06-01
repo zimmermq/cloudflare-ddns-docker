@@ -1,9 +1,50 @@
 #!/bin/bash
 
-echo "cloudflare-ddns-updater dockerized"
-echo "installing cronjob based on user-conf"
+#check if vars aure set
+if [[ -z "${AUTH_EMAIL}" ]]; then
+  echo "AUTH_EMAIL is not set"
+  exit 1
+fi
+if [[ -z "${AUTH_METHOD}" ]]; then
+  echo "AUTH_METHOD is not set"
+  exit 1
+fi
+if [[ -z "${AUTH_KEY}" ]]; then
+  echo "AUTH_KEY is not set"
+  exit 1
+fi
+if [[ -z "${ZONE_IDENTIFIER}" ]]; then
+  echo "ZONE_IDENTIFIER is not set"
+  exit 1
+fi
+if [[ -z "${RECORD_NAME}" ]]; then
+  echo "RECORD_NAME is not set"
+  exit 1
+fi
+if [[ -z "${TTL}" ]]; then
+  echo "TTL is not set"
+  exit 1
+fi
+if [[ -z "${PROXY}" ]]; then
+  echo "PROXY is not set"
+  exit 1
+fi
+
+echo "cloudflare-ddns.sh by K0p1-Git modified with some notification options and dockerized by emmel"
+echo ""
+echo "=================================="
+echo "Auth Email: ${AUTH_EMAIL}"
+echo "Auth Method: ${AUTH_METHOD}"
+echo "Auth Key: ***"
+echo "Zone Identifier: ${ZONE_IDENTIFIER}"
+echo "Record Name: ${RECORD_NAME}"
+echo "TTL: ${TTL}"
+echo "Proxy: ${PROXY}"
+echo "Crond Job: ${CRON_JOB:-0 * * * *}"
+echo "=================================="
 
 # install cron job 
+echo ">> installing cron job"
 cronjob="${CRON_JOB:-0 * * * *}"
 cronjob_log="${CRON_JOB_LOG:-/var/log/cron.log}"
 
@@ -13,12 +54,10 @@ chmod 0644 /cloudflare-ddns
 
 crontab /cloudflare-ddns
 
-#touch $cronjob_log
-
-echo "loading env vars"
+echo ">> loading env vars"
 printenv | grep -v "no_proxy" >> /etc/environment
 
-echo "starting cron..."
+echo ">> ready. ($(date "+%Y-%m-%d %H:%M:%S"))" 
 
 # start cron
 crond -f -l 2

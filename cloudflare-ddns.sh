@@ -2,39 +2,6 @@
 
 # the cf ddns script by K0p1-Git modified with some notification options and dockerized by me
 
-#check if vars aure set
-if [[ -z "${AUTH_EMAIL}" ]]; then
-  echo "AUTH_EMAIL is not set"
-  exit 1
-fi
-if [[ -z "${AUTH_METHOD}" ]]; then
-  echo "AUTH_METHOD is not set"
-  exit 1
-fi
-if [[ -z "${AUTH_KEY}" ]]; then
-  echo "AUTH_KEY is not set"
-  exit 1
-fi
-if [[ -z "${ZONE_IDENTIFIER}" ]]; then
-  echo "ZONE_IDENTIFIER is not set"
-  exit 1
-fi
-if [[ -z "${RECORD_NAME}" ]]; then
-  echo "RECORD_NAME is not set"
-  exit 1
-fi
-if [[ -z "${TTL}" ]]; then
-  echo "TTL is not set"
-  exit 1
-fi
-if [[ -z "${PROXY}" ]]; then
-  echo "PROXY is not set"
-  exit 1
-fi
-
-
-
-
 #env vars
 auth_email="${AUTH_EMAIL}"
 auth_method="${AUTH_METHOD}"
@@ -53,6 +20,58 @@ ntfyuri="${NTFYURI-''}"
 telegram_token="${TELEGRAM_TOKEN-''}"
 telegram_chat_id="${TELEGRAM_CHAT_ID-''}"
 
+err() {
+  echo "[ERROR] $(date '+%Y-%m-%d %H:%M:%S') $1"
+}
+
+log() {
+  echo "[INFO] $(date '+%Y-%m-%d %H:%M:%S') $1"
+}
+
+send_notification() {
+
+  if [[ $slackuri != "" ]]; then
+    log "Sending notification to slack"
+    curl -L -X POST $slackuri \
+    --data-raw '{
+      "channel": "'$slackchannel'",
+      "text" : "'"$1"'"
+    }'
+  fi
+  if [[ $discorduri != "" ]]; then
+    log "Sending notification to discord"
+    curl -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST \
+    --data-raw '{
+      "content" : "'"$1"'"
+    }' $discorduri
+
+  fi
+  if [[ $ntfyuri != "" ]]; then
+    log "Sending notification to ntfy"
+    curl -d "$(echo $1)" $ntfyuri
+  fi
+  if [[ $telegram_token != "" ]] && [[ $telegram_chat_id != "" ]]; then
+    log "Sending notification to telegram"
+    curl -H 'Content-Type: application/json' -X POST \
+    --data-raw '{
+      "chat_id": "'$telegram_chat_id'", "text": "'"$1"'"
+    }' https://api.telegram.org/bot$telegram_token/sendMessage
+  fi
+}
+
+notify() {
+  if [[ $notification_level == "always" ]]; then
+    send_notification "$(echo $2)"
+  elif [[ $notification_level == "on_success_or_error" ]]; then
+    if [[ $1 == "success" ]] || [[ $1 == "error" ]]; then
+      send_notification "$(echo $2)"
+    fi
+  elif [[ $notification_level == "on_error" ]]; then
+    if [[ $1 == "error" ]]; then
+      send_notification "$(echo $2)"
+    fi
+  fi
+}
 
 ###########################################
 ## Check if we have a public IP
@@ -69,8 +88,8 @@ fi
 
 # Use regex to check for proper IPv4 format.
 if [[ ! $ip =~ ^$ipv4_regex$ ]]; then
-    logger -s "DDNS Updater: Failed to find a valid IP."
-    echo "Failed to find valid IP"
+    err "Failed to find valid IP"
+    notify "error" "DDNS Update Failed: Failed to find valid IP"
     exit 2
 fi
 
@@ -87,8 +106,7 @@ fi
 ## Seek for the A record
 ###########################################
 
-logger "DDNS Updater: Check Initiated"
-echo "check initaited"
+log "Check initiated"
 record=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$zone_identifier/dns_records?type=A&name=$record_name" \
                       -H "X-Auth-Email: $auth_email" \
                       -H "$auth_header $auth_key" \
@@ -98,8 +116,8 @@ record=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/$zone_identi
 ## Check if the domain has an A record
 ###########################################
 if [[ $record == *"\"count\":0"* ]]; then
-  logger -s "DDNS Updater: Record does not exist, perhaps create one first? (${ip} for ${record_name})"
-  echo "Record does not exist, perhapscreate one first? (${ip} for ${record_name})"
+  err "Record does not exist, perhaps create one first? (${ip} for ${record_name})"
+  notify "error" "DDNS Update Failed: Record does not exist, perhaps create one first? (${ip} for ${record_name})"
   exit 1
 fi
 
@@ -109,8 +127,8 @@ fi
 old_ip=$(echo "$record" | sed -E 's/.*"content":"(([0-9]{1,3}\.){3}[0-9]{1,3})".*/\1/')
 # Compare if they're the same
 if [[ $ip == $old_ip ]]; then
-  logger "DDNS Updater: IP ($ip) for ${record_name} has not changed."
-  echo "IP  ($ip) for ${record_name} hast not canged."
+  log "IP ($ip) for ${record_name} hast not canged."
+  notify "debug" "IP ($ip) for ${record_name} has not canged."
   exit 0
 fi
 
@@ -133,57 +151,11 @@ update=$(curl -s -X PATCH "https://api.cloudflare.com/client/v4/zones/$zone_iden
 ###########################################
 case "$update" in
 *"\"success\":false"*)
-  echo -e "DDNS Updater: $ip $record_name DDNS failed for $record_identifier ($ip). DUMPING RESULTS:\n$update" | logger -s 
-  if [[ $slackuri != "" ]]; then
-    curl -L -X POST $slackuri \
-    --data-raw '{
-      "channel": "'$slackchannel'",
-      "text" : "'"$sitename"' DDNS Update Failed: '$record_name': '$record_identifier' ('$ip')."
-    }'
-  fi
-  if [[ $discorduri != "" ]]; then
-    curl -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST \
-    --data-raw '{
-      "content" : "'"$sitename"' DDNS Update Failed: '$record_name': '$record_identifier' ('$ip')."
-    }' $discorduri
-  fi
-  if [[ $ntfyuri != "" ]]; then
-    curl -X POST -H 'Content-type: application/json' --data '{"text":"'"$sitename"' DDNS Update Failed: '$record_name': '$record_identifier' ('$ip').", "title":"Cloudflare DDNS-Update failed"}' $ntfyuri
-  fi
-  if [[ $telegramtoken != "" ]] && [[ $telegramchatid != "" ]]; then
-    curl -H 'Content-Type: application/json' -X POST \
-    --data-raw '{
-      "chat_id": "'$telegramchatid'", "text": "'"$sitename"' DDNS Update Failed: '$record_name': '$record_identifier' ('$ip')."
-    }' https://api.telegram.org/bot$telegramtoken/sendMessage
-  fi
+  err "$ip $record_name DDNS failed for $record_identifier ($ip). DUMPING RESULTS:\n$update"
+  notify "error" "'"$sitename"' DDNS Update Failed: '$record_name': '$record_identifier' ('$ip')."
   exit 1;;
 *)
-  logger "DDNS Updater: $ip $record_name DDNS updated."
-  if [[ $notification_level != "always" ]]; then
-    exit 0
-  fi
-  
-  if [[ $slackuri != "" ]]; then
-    curl -L -X POST $slackuri \
-    --data-raw '{
-      "channel": "'$slackchannel'",
-      "text" : "'"$sitename"' Updated: '$record_name''"'"'s'""' new IP Address is '$ip'"
-    }'
-  fi
-  if [[ $discorduri != "" ]]; then
-    curl -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST \
-    --data-raw '{
-      "content" : "'"$sitename"' Updated: '$record_name''"'"'s'""' new IP Address is '$ip'"
-    }' $discorduri
-  fi
-  if [[ $ntfyuri != "" ]]; then
-    curl -X POST -H 'Content-type: application/json' --data '{"text":"'"$sitename"' Updated: '$record_name''"'"'s'""' new IP Address is '$ip'", "title":"Cloudflare DDNS-Update"}' $ntfyuri
-  fi
-  if [[ $telegramtoken != "" ]] && [[ $telegramchatid != "" ]]; then
-    curl -H 'Content-Type: application/json' -X POST \
-    --data-raw '{
-      "chat_id": "'$telegramchatid'", "text": "'"$sitename"' DDNS Update Failed: '$record_name': '$record_identifier' ('$ip')."
-    }' https://api.telegram.org/bot$telegramtoken/sendMessage
-  fi
+  log "$ip $record_name DDNS updated."
+  notify "success" "'"$sitename"' Updated: '$record_name''"'"'s'""' new IP Address is '$ip'"
   exit 0;;
 esac
