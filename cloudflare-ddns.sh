@@ -30,29 +30,29 @@ log() {
 
 send_notification() {
 
-  if [[ $slackuri != "" ]]; then
+  if [[ $slackuri != '' ]]; then
     log "Sending notification to slack"
-    curl -L -X POST $slackuri \
+    curl --silent -L -X POST $slackuri \
     --data-raw '{
       "channel": "'$slackchannel'",
       "text" : "'"$1"'"
     }'
   fi
-  if [[ $discorduri != "" ]]; then
+  if [[ $discorduri != '' ]]; then
     log "Sending notification to discord"
-    curl -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST \
+    curl --silent -i -H "Accept: application/json" -H "Content-Type:application/json" -X POST \
     --data-raw '{
       "content" : "'"$1"'"
     }' $discorduri
 
   fi
-  if [[ $ntfyuri != "" ]]; then
+  if [[ $ntfyuri != '' ]]; then
     log "Sending notification to ntfy"
-    curl -d "$(echo $1)" $ntfyuri
+    curl --silent -d "$(echo $1)" $ntfyuri
   fi
-  if [[ $telegram_token != "" ]] && [[ $telegram_chat_id != "" ]]; then
+  if [[ $telegram_token != '' ]] && [[ $telegram_chat_id != '' ]]; then
     log "Sending notification to telegram"
-    curl -H 'Content-Type: application/json' -X POST \
+    curl --silent -H 'Content-Type: application/json' -X POST \
     --data-raw '{
       "chat_id": "'$telegram_chat_id'", "text": "'"$1"'"
     }' https://api.telegram.org/bot$telegram_token/sendMessage
