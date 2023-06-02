@@ -2,7 +2,7 @@
 Lightweight Docker Container that dynamically updates the IP via Cloudflare API. Access your home network remotely via a custom domain name without a static IP! 
 
 ## About
-This is a fork of [K0P1-Git/cloudflare-ddns-updater](https://github.com/K0P1-Git/cloudflare-ddns-updater) script added with **docker** support and some **notification services**.
+This is a fork of [K0p1-Git/cloudflare-ddns-updater](https://github.com/K0p1-Git/cloudflare-ddns-updater) script added with **docker** support and some **notification services**.
 - lightweight docker image based on alpine
 - written in pure BASH
 - scheduled with crond
