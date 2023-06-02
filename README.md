@@ -6,12 +6,7 @@ This is a fork of [K0P1-Git/cloudflare-ddns-updater](https://github.com/K0P1-Git
 - lightweight docker image based on alpine
 - written in pure BASH
 - scheduled with crond
-- notification services
-  - slack
-  - discord
-  - ntfy
-  - telegram
-
+- notifications
 
 ## Configuration
 ### Example docker-compose.yml
@@ -77,6 +72,8 @@ services:
 |`TELEGRAM_CHAT_ID`|Telegram chat id| 
 
 ### How to use cron
+[Cron](https://en.wikipedia.org/wiki/Cron) is used to schedule the script execution.
+You can use [crontab.guru](https://crontab.guru) as helper to get the cron job working.
 ```
 # ┌───────────── minute (0 - 59)
 # │ ┌───────────── hour (0 - 23)
