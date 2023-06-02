@@ -156,6 +156,6 @@ case "$update" in
   exit 1;;
 *)
   log "$ip $record_name DDNS updated."
-  notify "success" "'"$sitename"' Updated: '$record_name''"'"'s'""' new IP Address is '$ip'"
+  notify "success" "'"$sitename"'" Updated: '$record_name''"'"'s'""' new IP Address is '$ip'"
   exit 0;;
 esac
