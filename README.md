@@ -8,6 +8,8 @@ This is a fork of [K0p1-Git/cloudflare-ddns-updater](https://github.com/K0p1-Git
 - scheduled with crond
 - notifications
 
+Pull image from Docker Hub: [emmello/cloudflare-ddns](https://hub.docker.com/r/emmello/cloudflare-ddns)
+
 ## Configuration
 ### Example docker-compose.yml
 ```yaml
