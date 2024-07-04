@@ -140,23 +140,25 @@ record_identifier=$(echo "$record" | sed -E 's/.*"id":"(\w+)".*/\1/')
 ###########################################
 ## Change the IP@Cloudflare using the API
 ###########################################
-update=$(curl -s -X PATCH "https://api.cloudflare.com/client/v4/zones/$zone_identifier/dns_records/$record_identifier" \
+curl -s -X PATCH "https://api.cloudflare.com/client/v4/zones/$zone_identifier/dns_records/$record_identifier" \
                      -H "X-Auth-Email: $auth_email" \
                      -H "$auth_header $auth_key" \
                      -H "Content-Type: application/json" \
-                     --data "{\"type\":\"A\",\"name\":\"$record_name\",\"content\":\"$ip\",\"ttl\":$ttl,\"proxied\":${proxy}}")
+                     --data "{\"type\":\"A\",\"name\":\"$record_name\",\"content\":\"$ip\",\"ttl\":$ttl,\"proxied\":${proxy}}"
 
 ###########################################
 ## Report the status
 ###########################################
-echo $update
-case "$update" in
-*"\"success\":false"*)
-  err "$ip $record_name DDNS failed for $record_identifier ($ip). DUMPING RESULTS:\n$update"
-  notify "error" "'"$sitename"' DDNS Update Failed: '$record_name': '$record_identifier' ('$ip')."
-  exit 1;;
-*)
-  log "$ip $record_name DDNS updated."
-  notify "success" "'"$sitename"'" Updated: '$record_name''"'"'s'""' new IP Address is '$ip'"
-  exit 0;;
-esac
+
+
+#echo $update
+#case "$update" in
+#*"\"success\":false"*)
+#  err "$ip $record_name DDNS failed for $record_identifier ($ip). DUMPING RESULTS:\n$update"
+#  notify "error" "'"$sitename"' DDNS Update Failed: '$record_name': '$record_identifier' ('$ip')."
+#  exit 1;;
+#*)
+#  log "$ip $record_name DDNS updated."
+#  notify "success" "'"$sitename"'" Updated: '$record_name''"'"'s'""' new IP Address is '$ip'"
+#  exit 0;;
+#esac
