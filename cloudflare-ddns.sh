@@ -127,7 +127,7 @@ fi
 old_ip=$(echo "$record" | sed -E 's/.*"content":"(([0-9]{1,3}\.){3}[0-9]{1,3})".*/\1/')
 # Compare if they're the same
 if [[ $ip == $old_ip ]]; then
-  log "Update skipped because IP ($ip) for ${record_name} hast not changed."
+  log "Update skipped because IP ($ip) for ${record_name} has not changed."
   notify "debug" "DDNS-Update Skipped: IP ($ip) for ${record_name} has not changed."
   exit 0
 fi
