@@ -149,6 +149,7 @@ update=$(curl -s -X PATCH "https://api.cloudflare.com/client/v4/zones/$zone_iden
 ###########################################
 ## Report the status
 ###########################################
+echo $update
 case "$update" in
 *"\"success\":false"*)
   err "$ip $record_name DDNS failed for $record_identifier ($ip). DUMPING RESULTS:\n$update"
