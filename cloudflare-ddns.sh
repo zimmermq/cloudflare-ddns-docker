@@ -20,9 +20,17 @@ ntfyuri="${NTFYURI}"
 telegram_token="${TELEGRAM_TOKEN}"
 telegram_chat_id="${TELEGRAM_CHAT_ID}"
 
-err() {
-  echo "[ERROR] $(date '+%Y-%m-%d %H:%M:%S') $1"
-}
+auth_email=""                                       # The email used to login 'https://dash.cloudflare.com'
+auth_method="token"                                 # Set to "global" for Global API Key or "token" for Scoped API Token
+auth_key=""                                         # Your API Token or Global API Key
+zone_identifier=""                                  # Can be found in the "Overview" tab of your domain
+record_name=""                                      # Which record you want to be synced
+ttl=3600                                            # Set the DNS TTL (seconds)
+proxy="false"                                       # Set the proxy to true or false
+sitename=""                                         # Title of site "Example Site"
+slackchannel=""                                     # Slack Channel #example
+slackuri=""                                         # URI for Slack WebHook "https://hooks.slack.com/services/xxxxx"
+discorduri=""                                       # URI for Discord WebHook "https://discordapp.com/api/webhooks/xxxxx"
 
 log() {
   echo "[INFO] $(date '+%Y-%m-%d %H:%M:%S') $1"
