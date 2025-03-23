@@ -40,12 +40,11 @@ echo "=================================="
 
 # Set default cron job if not specified (hourly)
 CRON_JOB=${CRON_JOB:-0 * * * *}
-CRON_JOB_LOG=${CRON_JOB_LOG:-/var/log/cron.log}
 
 # Install cron job
 echo ">> Setting up cron job"
 CRON_FILE="/usr/local/bin/cloudflare-ddns-cron"
-echo "$CRON_JOB /bin/bash /usr/local/bin/cloudflare-templatev4.sh >> $CRON_JOB_LOG 2>&1" > "$CRON_FILE"
+echo "$CRON_JOB /bin/bash /usr/local/bin/cloudflare-templatev4.sh" > "$CRON_FILE"
 chmod 0644 "$CRON_FILE"
 crontab "$CRON_FILE"
 
@@ -63,7 +62,6 @@ else
 fi
 
 echo ">> Setup complete. Starting cron service... ($(date "+%Y-%m-%d %H:%M:%S"))"
-echo ">> Logs will be written to: $CRON_JOB_LOG"
 echo "=================================="
 
 # Start cron daemon in foreground with logging
