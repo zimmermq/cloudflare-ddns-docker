@@ -15,7 +15,7 @@ Pull image from Docker Hub: [zimmermq/cloudflare-ddns](https://hub.docker.com/r/
 ```yaml
 services:
   ddns:
-    image: emmello/cloudflare-ddns
+    image: zimmermq/cloudflare-ddns
     restart: always
     container_name: ddns
     environment:

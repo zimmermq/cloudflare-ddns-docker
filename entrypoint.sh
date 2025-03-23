@@ -48,7 +48,7 @@ echo ">> installing cron job"
 cronjob="${CRON_JOB:-0 * * * *}"
 cronjob_log="${CRON_JOB_LOG:-/var/log/cron.log}"
 
-echo "$cronjob /bin/bash /usr/local/bin/cloudflare-ddns.sh" > /usr/local/bin/cloudflare-ddns-cron
+echo "$cronjob /bin/bash /usr/local/bin/cloudflare-templatev4.sh" > /usr/local/bin/cloudflare-ddns-cron
 
 chmod 0644 /usr/local/bin/cloudflare-ddns-cron
 
