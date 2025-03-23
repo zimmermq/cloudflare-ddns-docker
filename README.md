@@ -1,17 +1,26 @@
-# ☁️ Cloudflare DDNS IP Updater - Docker
-Lightweight Docker Container that dynamically updates the IP via Cloudflare API. Access your home network remotely via a custom domain name without a static IP! 
+# ☁️ Cloudflare DDNS IP Updater
 
-## About
-This is a fork of [officialEmmel/cloudflare-ddns-updater](https://github.com/officialEmmel/cloudflare-ddns-docker) script added with **docker** support and some **notification services**.
-- lightweight docker image based on alpine
-- written in pure BASH
-- scheduled with crond
-- notifications
+[![Docker Pulls](https://img.shields.io/docker/pulls/zimmermq/cloudflare-ddns.svg)](https://hub.docker.com/r/zimmermq/cloudflare-ddns)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://github.com/K0p1-Git/cloudflare-ddns-updater/blob/main/LICENSE)
 
-Pull image from Docker Hub: [zimmermq/cloudflare-ddns](https://hub.docker.com/r/emmello/cloudflare-ddns)
+A lightweight Docker container that automatically updates your Cloudflare DNS records with your current IP address, allowing remote access to your home network via a custom domain name without a static IP.
 
-## Configuration
-### Example docker-compose.yml
+## Features
+
+- Lightweight Alpine-based Docker image
+- Pure Bash implementation for minimal overhead
+- Scheduled updates via cron
+- Multiple notification options (Slack, Discord, Ntfy, Telegram)
+- Simple configuration via environment variables
+
+## Quick Start
+
+```bash
+docker pull zimmermq/cloudflare-ddns
+```
+
+### Docker Compose Setup
+
 ```yaml
 services:
   ddns:
@@ -19,7 +28,7 @@ services:
     restart: always
     container_name: ddns
     environment:
-      - CRON_JOB=* * * * *
+      - CRON_JOB=*/15 * * * *      # Check every 15 minutes
       - AUTH_EMAIL=mail@example.com
       - AUTH_METHOD=global
       - AUTH_KEY=abcdefgh12345
@@ -31,68 +40,137 @@ services:
       - SITENAME=example.com
       - NOTIFICATION_LEVEL=on_success_or_error
       - NTFYURI=https://ntfy.example.com/ddns
-
 ```
-### Environment variables
-### Required
-| Name | Description | 
-|---|---|
-|`AUTH_EMAIL`|(required) Mail used to register with Cloudflare|
-|`AUTH_METHOD`|(required) `global` for Global API Key or `token` for Scoped API Token | 
-|`ZONE_IDENTIFIER`|(required) Can be found in the "Overview" tab of your domain|
-|`RECORD_NAME`|(required) Which record you want to be synced|
-|`TTL`|(required) DNS TTL in seconds |`"token":"abc123"`|
-|`PROXY`|(required) proxy through cloudflare network `true` or `false`|
-|`CRON_JOB`|(required) Array of IPs that cant access the command|
 
-### Notifications
-| Name | Description | 
-|---|---|
-|`SITENAME`|Used for notifications as identifier|
-|`NOTIFICATION_LEVEL`|`on_error` to get notified only on error; `on_success_or_error` to get notified on success or error; `always` to get notified oon every try even if ip has not changed| 
+## Configuration Reference
 
-#### Slack
-| Name | Description | 
-|---|---|
-|`SLACKURI`|Slack Uri|
-|`SLACKCHANNEL`|Slackchannel| 
+### Required Settings
 
-#### Discord Webhook
-| Name | Description | 
+| Environment Variable | Description |
 |---|---|
-|`DISCORDURI`|Discord WebHook uri| 
+| `AUTH_EMAIL` | Email address used for your Cloudflare account |
+| `AUTH_METHOD` | Authentication method (`global` for Global API Key or `token` for Scoped API Token) |
+| `AUTH_KEY` | Your Cloudflare API key or token |
+| `ZONE_IDENTIFIER` | Zone ID for your domain (found in Cloudflare Dashboard → Domain → Overview) |
+| `RECORD_NAME` | The DNS record to update (e.g., `home.example.com`) |
+| `RECORD_TYPE` | DNS record type (typically `A` for IPv4 or `AAAA` for IPv6) |
+| `TTL` | Time-to-live for DNS record in seconds (1 = auto, 60-86400 for manual) |
+| `PROXY` | Whether to proxy through Cloudflare (`true` or `false`) |
+| `CRON_JOB` | Schedule for IP check (e.g., `*/5 * * * *` for every 5 minutes) |
 
-#### Ntfy
-| Name | Description | 
+### Getting Your Cloudflare API Credentials
+
+1. Log in to your Cloudflare dashboard
+2. Go to "My Profile" → "API Tokens"
+3. Create a token with "Zone.DNS" edit permissions for your domain
+4. Find your Zone ID in the "Overview" tab of your domain
+
+### Notification Options
+
+Control how and when you receive updates:
+
+| Environment Variable | Description |
 |---|---|
-|`NTFYURI`|Ntfy uri and topic| 
+| `SITENAME` | Identifier used in notifications (typically your domain name) |
+| `NOTIFICATION_LEVEL` | When to send notifications:<br>• `on_error` - Only on failures<br>• `on_success_or_error` - On success or failure<br>• `always` - Every attempt, even when IP hasn't changed |
 
-#### Telegram
-| Name | Description | 
+#### Notification Service Configuration
+
+<details>
+<summary>Slack</summary>
+
+| Environment Variable | Description |
 |---|---|
-|`TELEGRAM_TOKEN`|Telegram bot token| 
-|`TELEGRAM_CHAT_ID`|Telegram chat id| 
+| `SLACKURI` | Your Slack webhook URL |
+| `SLACKCHANNEL` | The Slack channel to post to |
+</details>
 
-### How to use cron
-[Cron](https://en.wikipedia.org/wiki/Cron) is used to schedule the script execution.
-You can use [crontab.guru](https://crontab.guru) as helper to get the cron job working.
+<details>
+<summary>Discord</summary>
+
+| Environment Variable | Description |
+|---|---|
+| `DISCORDURI` | Your Discord webhook URL |
+</details>
+
+<details>
+<summary>Ntfy</summary>
+
+| Environment Variable | Description |
+|---|---|
+| `NTFYURI` | Your Ntfy URI including topic (e.g., `https://ntfy.example.com/ddns`) |
+</details>
+
+<details>
+<summary>Telegram</summary>
+
+| Environment Variable | Description |
+|---|---|
+| `TELEGRAM_TOKEN` | Your Telegram bot token |
+| `TELEGRAM_CHAT_ID` | Your Telegram chat ID |
+</details>
+
+## Cron Schedule Reference
+
+The `CRON_JOB` variable uses standard cron syntax:
+
 ```
 # ┌───────────── minute (0 - 59)
 # │ ┌───────────── hour (0 - 23)
-# │ │ ┌───────────── day of the month (1 - 31)
+# │ │ ┌───────────── day of month (1 - 31)
 # │ │ │ ┌───────────── month (1 - 12)
-# │ │ │ │ ┌───────────── day of the week (0 - 6) (Sunday to Saturday 7 is also Sunday on some systems)
-# │ │ │ │ │                               
-# │ │ │ │ │ 
-# │ │ │ │ │ 
-# * * * * * 
+# │ │ │ │ ┌───────────── day of week (0 - 6) (Sunday to Saturday)
+# │ │ │ │ │
+# │ │ │ │ │
+# * * * * *
+```
+
+Common examples:
+- `*/5 * * * *` - Every 5 minutes
+- `0 * * * *` - Every hour
+- `0 0 * * *` - Once a day at midnight
+
+For help creating cron expressions, visit [crontab.guru](https://crontab.guru).
+
+## Use Cases
+
+- Hosting a personal website or services from home
+- Remote access to home lab or self-hosted applications
+- NAS or media server access from anywhere
+- Home automation remote control
+- Game servers accessible via domain name
+
+## Troubleshooting
+
+### Common Issues
+
+1. **No IP Updates**: Check your cron schedule and logs
+2. **Authentication Errors**: Verify your Cloudflare API credentials
+3. **Missing Notifications**: Confirm notification service credentials and network access
+
+View container logs with:
+```bash
+docker logs ddns
 ```
 
 ## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
 
-## Reference
-This script was made with reference from [Keld Norman](https://www.youtube.com/watch?v=vSIBkH7sxos) video.
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+For major changes, please open an issue first to discuss what you would like to change.
+
+## Credits
+
+This project is a fork of [officialEmmel/cloudflare-ddns-updater](https://github.com/officialEmmel/cloudflare-ddns-docker) with Docker support and notification services added.
+
+Original script reference from [Keld Norman](https://www.youtube.com/watch?v=vSIBkH7sxos).
 
 ## License
+
 [MIT](https://github.com/K0p1-Git/cloudflare-ddns-updater/blob/main/LICENSE)
