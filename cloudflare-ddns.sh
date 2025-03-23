@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # the cf ddns script by K0p1-Git modified with some notification options and dockerized by me
+# https://github.com/K0p1-Git/cloudflare-ddns-updater
 
 # Load environment variables with sensible defaults
 auth_email="${AUTH_EMAIL:-}"
