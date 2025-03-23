@@ -133,11 +133,15 @@ fi
 ## Get existing IP
 ###########################################
 old_ip=$(echo "$record" | sed -E 's/.*"content":"(([0-9]{1,3}\.){3}[0-9]{1,3})".*/\1/')
+
+# Check if the IP is valid
+if [[ $old_ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
 # Compare if they're the same
-if [[ $ip == $old_ip ]]; then
-  log "Update skipped because IP ($ip) for ${record_name} hast not changed."
-  notify "debug" "DDNS-Update Skipped: IP ($ip) for ${record_name} has not changed."
-  exit 0
+  if [[ $ip == $old_ip ]]; then
+    log "Update skipped because IP ($ip) for ${record_name} has not changed."
+    notify "debug" "DDNS-Update Skipped: IP ($ip) for ${record_name} has not changed."
+    exit 0
+  fi
 fi
 
 ###########################################
