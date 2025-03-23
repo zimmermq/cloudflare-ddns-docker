@@ -1,64 +1,70 @@
 #!/bin/bash
+set -eo pipefail
 
-#check if vars aure set
-if [[ -z "${AUTH_EMAIL}" ]]; then
-  echo "AUTH_EMAIL is not set"
-  exit 1
-fi
-if [[ -z "${AUTH_METHOD}" ]]; then
-  echo "AUTH_METHOD is not set"
-  exit 1
-fi
-if [[ -z "${AUTH_KEY}" ]]; then
-  echo "AUTH_KEY is not set"
-  exit 1
-fi
-if [[ -z "${ZONE_IDENTIFIER}" ]]; then
-  echo "ZONE_IDENTIFIER is not set"
-  exit 1
-fi
-if [[ -z "${RECORD_NAME}" ]]; then
-  echo "RECORD_NAME is not set"
-  exit 1
-fi
-if [[ -z "${TTL}" ]]; then
-  echo "TTL is not set"
-  exit 1
-fi
-if [[ -z "${PROXY}" ]]; then
-  echo "PROXY is not set"
-  exit 1
-fi
+# Script: cloudflare-ddns-docker
+# Purpose: Update Cloudflare DNS records with current IP address
+# Based on work by officialEmmel and K0p1-Git, improved by zimmermq
 
+# Define required environment variables
+REQUIRED_VARS=(
+  "AUTH_EMAIL"
+  "AUTH_METHOD"
+  "AUTH_KEY"
+  "ZONE_IDENTIFIER"
+  "RECORD_NAME"
+  "TTL"
+  "PROXY"
+)
+
+# Check if required variables are set
+for VAR in "${REQUIRED_VARS[@]}"; do
+  if [[ -z "${!VAR}" ]]; then
+    echo "Error: ${VAR} is not set"
+    exit 1
+  fi
+done
+
+# Print configuration (hide sensitive info)
 echo "=================================="
-echo "cloudflare-ddns-docker by zimmermq based on officialEmmel and script by K0p1-Git"
+echo "Cloudflare DDNS Docker Setup"
 echo "=================================="
 echo "Auth Email: ${AUTH_EMAIL}"
 echo "Auth Method: ${AUTH_METHOD}"
-echo "Auth Key: ***"
+echo "Auth Key: ${AUTH_KEY:0:3}****${AUTH_KEY: -3}"
 echo "Zone Identifier: ${ZONE_IDENTIFIER}"
 echo "Record Name: ${RECORD_NAME}"
 echo "TTL: ${TTL}"
 echo "Proxy: ${PROXY}"
-echo "Crond Job: ${CRON_JOB:-0 * * * *}"
+echo "Cron Schedule: ${CRON_JOB:-0 * * * *}"
 echo "=================================="
 
-# install cron job 
-echo ">> installing cron job"
-cronjob="${CRON_JOB:-0 * * * *}"
-cronjob_log="${CRON_JOB_LOG:-/var/log/cron.log}"
+# Set default cron job if not specified (hourly)
+CRON_JOB=${CRON_JOB:-0 * * * *}
+CRON_JOB_LOG=${CRON_JOB_LOG:-/var/log/cron.log}
 
-echo "$cronjob /bin/bash /usr/local/bin/cloudflare-templatev4.sh" > /usr/local/bin/cloudflare-ddns-cron
+# Install cron job
+echo ">> Setting up cron job"
+CRON_FILE="/usr/local/bin/cloudflare-ddns-cron"
+echo "$CRON_JOB /bin/bash /usr/local/bin/cloudflare-templatev4.sh >> $CRON_JOB_LOG 2>&1" > "$CRON_FILE"
+chmod 0644 "$CRON_FILE"
+crontab "$CRON_FILE"
 
-chmod 0644 /usr/local/bin/cloudflare-ddns-cron
+# Export environment variables (excluding proxy settings)
+echo ">> Exporting environment variables"
+printenv | grep -v "no_proxy" | grep -v "NO_PROXY" >> /etc/environment
 
-crontab /usr/local/bin/cloudflare-ddns-cron
+# Start the DDNS update process immediately
+echo ">> Running initial DDNS update"
+if [[ -f /usr/local/bin/cloudflare-templatev4.sh ]]; then
+  /bin/bash /usr/local/bin/cloudflare-templatev4.sh
+else
+  echo "Error: Update script not found at /usr/local/bin/cloudflare-templatev4.sh"
+  exit 1
+fi
 
-echo ">> loading env vars"
-printenv | grep -v "no_proxy" >> /etc/environment
-
-echo ">> setup ready. starting cron... ($(date "+%Y-%m-%d %H:%M:%S"))" 
+echo ">> Setup complete. Starting cron service... ($(date "+%Y-%m-%d %H:%M:%S"))"
+echo ">> Logs will be written to: $CRON_JOB_LOG"
 echo "=================================="
 
-# start cron
-crond -f -l 2
+# Start cron daemon in foreground with logging
+exec crond -f -l 2
