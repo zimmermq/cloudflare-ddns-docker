@@ -1,4 +1,4 @@
-FROM alpine:3.7
+FROM alpine:3.23
 
 LABEL maintainer="zimmermq" \
       version="1.0" \
