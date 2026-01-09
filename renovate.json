@@ -3,6 +3,8 @@
   "extends": [
     "config:recommended"
   ],
+  "dependencyDashboard": true,
+  "dependencyDashboardAutoclose": false,
   "timezone": "Europe/Berlin",
   "schedule": [
     "after 11am and before 10pm"
